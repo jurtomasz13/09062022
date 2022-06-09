@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Players</title>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td>Name</td>
+        <td>Profession</td>
+        <td>HP</td>
+        <td>Attack power</td>
+        <td>Status</td>
+        <td>Kills</td>
+        <td>Deaths</td>
+      </tr>
+      {% for player in players['players'] %}
+      <tr>
+        <td>{{ player['name'] }}</td>
+        <td>{{ player['profession'] }}</td>
+        <td>{{ player['hp'] }}</td>
+        <td>{{ player['attack_power'] }}</td>
+        <td>{{ player['status'] }}</td>
+        <td>{{ player['kills'] }}</td>
+        <td>{{ player['deaths'] }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
