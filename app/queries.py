@@ -7,6 +7,6 @@ SELECT_ALL_PLAYERS = """
 """
 
 CREATE_PLAYER = """
-    INPUT INTO players(name, profession, hp, attack_power) 
+    INSERT INTO players (name, profession, hp, attack_power) 
     values ('{}', '{}', {}, {})
 """

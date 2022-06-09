@@ -19,6 +19,9 @@ def to_json(players):
 def create_player(name, profession, hp, attack_power):
     with connection() as cursor:
         try:
+            print(name, profession, hp, attack_power)
+            print(CREATE_PLAYER.format(
+                name, profession, hp, attack_power))
             cursor.execute(CREATE_PLAYER.format(
                 name, profession, hp, attack_power))
         finally:
