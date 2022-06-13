@@ -1,36 +1,28 @@
 from database import connection
 from queries import *
-
-TABLE_COLUMNS = ['name', 'profession', 'hp',
-                 'attack_power', 'status', 'kills', 'deaths']
-
-
-def to_json(players):
-    players_dict = {}
-    players_dict['players'] = []
-    if type(players) == list:
-        for player in players:
-            players_dict['players'].append(dict(zip(TABLE_COLUMNS, player)))
-    else:
-        players_dict['players'].append(dict(zip(TABLE_COLUMNS, players)))
-    return players_dict
+from utils import *
 
 
 def create_player(name, profession, hp, attack_power):
     with connection() as cursor:
         try:
-            print(name, profession, hp, attack_power)
-            print(CREATE_PLAYER.format(
-                name, profession, hp, attack_power))
-            cursor.execute(CREATE_PLAYER.format(
-                name, profession, hp, attack_power))
+            params = {
+                'name': name,
+                'profession': profession,
+                'hp': hp,
+                'attack_power': attack_power
+            }
+            cursor.execute(CREATE_PLAYER, params)
         finally:
             print('Player created!')
 
 
 def get_player_by_name(name):
     with connection() as cursor:
-        result = cursor.execute(SELECT_PLAYER_BY_NAME.format(name))
+        params = {
+            'name': name
+        }
+        result = cursor.execute(SELECT_PLAYER_BY_NAME, params)
         player = result.fetchone()
         return to_json(player)
 

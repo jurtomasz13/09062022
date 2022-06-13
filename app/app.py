@@ -15,8 +15,10 @@ async def homepage(request):
 
 
 async def get_player(request):
-    name = request.path_params['name']
+    name = request.query_params['name']
     player = crud.get_player_by_name(name)
+    if len(player['players']) == 0:
+        return JSONResponse(content={'status': 404})
     return JSONResponse(content=player)
 
 
@@ -50,7 +52,7 @@ async def html_create_player(request):
 routes = [
     Route('/', homepage),
     Route('/api/players', get_players),
-    Route('/api/player/{name}', get_player),
+    Route('/api/player', get_player),
     Route('/api/player', create_player, methods=['POST']),
     Route('/players', html_get_players),
     Route('/player/{name}', html_get_player),
