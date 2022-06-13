@@ -10,3 +10,15 @@ CREATE_PLAYER = """
     INSERT INTO players (name, profession, hp, attack_power) 
     values (:name, :profession, :hp, :attack_power)
 """
+
+ADD_KILL = """
+    UPDATE players
+    SET kills = :new_kills
+    WHERE name = :name
+"""
+
+ADD_DEATH = """
+    UPDATE players
+    SET deaths = :new_deaths
+    WHERE name = :name
+"""
