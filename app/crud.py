@@ -27,14 +27,14 @@ def get_player_by_name(name):
         return to_json(player)
 
 
-def update_match(winner_player, loser_player):
+def update_stats(winner, loser):
     with connection() as cursor:
-        new_kills = winner_player['kills'] + 1
-        new_deaths = loser_player['deaths'] + 1
+        new_kills = winner['kills'] + 1
+        new_deaths = loser['deaths'] + 1
         cursor.execute(
-            ADD_KILL, {'new_kills': new_kills, 'name': winner_player['name']})
+            ADD_KILL, {'new_kills': new_kills, 'name': winner['name']})
         cursor.execute(
-            ADD_DEATH, {'new_deaths': new_deaths, 'name': loser_player['name']})
+            ADD_DEATH, {'new_deaths': new_deaths, 'name': loser['name']})
 
 
 def get_players():

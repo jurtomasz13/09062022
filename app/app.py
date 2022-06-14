@@ -1,9 +1,11 @@
-from json import JSONDecodeError
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from starlette.routing import Route, Mount
 from starlette.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException
+
+from json import JSONDecodeError
 from random import randint
 import crud
 
@@ -44,16 +46,16 @@ async def attack_player(request):
                                               * LOWER_MULTIPLIER, player['attack_power']*HIGHER_MULTIPLIER)
         if player['hp'] > 0:
             crud.update_stats(player, enemy_player)
-            message = {'Winner': player['name']}
+            message = {'winner': player['name']}
         else:
             crud.update_stats(enemy_player, player)
-            message = {'Winner': enemy_player['name']}
+            message = {'winner': enemy_player['name']}
     except JSONDecodeError:
-        message = {
-            'message': 'You didn\'t specify a player in a path or enemy in a body'}
+        message = 'You didn\'t specify a player in a path or enemy in a body'
+        raise HTTPException(status_code=404, detail=message)
     except IndexError:
-        message = {
-            'message': 'Your player or enemy with specified nickname does not exist'}
+        message = 'Your player or enemy with specified nickname does not exist'
+        raise HTTPException(status_code=404, detail=message)
     return JSONResponse(content=message)
 
 
