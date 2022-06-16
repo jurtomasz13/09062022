@@ -1,44 +1,61 @@
-from database import connection
+from sqlite3 import Cursor
+
+from utils import to_json, db_conn
 from queries import *
-from utils import *
 
 
-def create_player(name, profession, hp, attack_power):
-    with connection() as cursor:
-        try:
-            params = {
-                'name': name,
-                'profession': profession,
-                'hp': hp,
-                'attack_power': attack_power
-            }
-            cursor.execute(CREATE_PLAYER, params)
-        finally:
-            print('Player created!')
+@db_conn
+def create_player(db: Cursor, name: str, profession: str, hp: int, attack: int) -> int:
+    params = {
+        'name': name,
+        'profession': profession,
+        'hp': hp,
+        'attack_power': attack
+    }
+    db.execute(CREATE_PLAYER, params)
+    return db.lastrowid
 
 
-def get_player_by_name(name):
-    with connection() as cursor:
-        params = {
-            'name': name
-        }
-        result = cursor.execute(SELECT_PLAYER_BY_NAME, params)
-        player = result.fetchone()
-        return to_json(player)
+@db_conn
+def get_player_by_name(db: Cursor, name: str) -> dict:
+    player = db.execute(SELECT_PLAYER_BY_NAME, {'name': name}).fetchone()
+    return to_json(player)
 
 
-def update_stats(winner, loser):
-    with connection() as cursor:
-        new_kills = winner['kills'] + 1
-        new_deaths = loser['deaths'] + 1
-        cursor.execute(
-            ADD_KILL, {'new_kills': new_kills, 'name': winner['name']})
-        cursor.execute(
-            ADD_DEATH, {'new_deaths': new_deaths, 'name': loser['name']})
+@db_conn
+def get_player_by_id(db: Cursor, id: int) -> dict:
+    player = db.execute(SELECT_PLAYER_BY_ID, {'rowid': id}).fetchone()
+    return to_json(player)
 
 
-def get_players():
-    with connection() as cursor:
-        result = cursor.execute(SELECT_ALL_PLAYERS)
-        players = result.fetchall()
-        return to_json(players)
+@db_conn
+def update_stats(db: Cursor, winner: str, loser: str) -> dict:
+    db.execute(
+        ADD_KILL, {'name': winner})
+    db.execute(
+        ADD_DEATH, {'name': loser})
+    result = {
+        'winner': to_json(db.execute(SELECT_PLAYER_BY_NAME, {'name': winner}).fetchone()),
+        'loser': to_json(db.execute(SELECT_PLAYER_BY_NAME, {'name': loser}).fetchone())
+    }
+    return result
+
+
+@ db_conn
+def get_players(db: Cursor) -> dict:
+    players = db.execute(SELECT_ALL_PLAYERS).fetchall()
+    return to_json(players)
+
+
+@ db_conn
+def login(db: Cursor, name: str) -> dict:
+    db.execute(SET_ONLINE, {'name': name})
+    result = db.execute(SELECT_PLAYER_BY_NAME, {'name': name}).fetchone()
+    return to_json(result)
+
+
+@ db_conn
+def logout(db: Cursor, name: str) -> dict:
+    db.execute(SET_OFFLINE, {'name': name})
+    result = db.execute(SELECT_PLAYER_BY_NAME, {'name': name}).fetchone()
+    return to_json(result)

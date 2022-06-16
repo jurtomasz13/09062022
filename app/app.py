@@ -1,84 +1,131 @@
 from starlette.applications import Starlette
-from starlette.responses import JSONResponse, PlainTextResponse, RedirectResponse
-from starlette.routing import Route, Mount
-from starlette.templating import Jinja2Templates
-from starlette.staticfiles import StaticFiles
+from starlette.requests import Request
+from starlette.responses import JSONResponse, PlainTextResponse
+from starlette.routing import Route
 from starlette.exceptions import HTTPException
+from starlette import status
+from sqlite3 import IntegrityError
 
-from service import fight
-from json import JSONDecodeError
+from exceptions import UnknownProfession, StatusOffline
+import service
 import crud
 
 
-templates = Jinja2Templates(directory='static/templates')
-
-
-async def homepage(request):
+async def home(request: Request):
     return PlainTextResponse(content='Hello, world!')
 
 
-async def get_player(request):
-    name = request.query_params['name']
-    player = crud.get_player_by_name(name)
-    if len(player['players']) == 0:
-        return JSONResponse(content={'status': 404})
-    return JSONResponse(content=player)
+async def player(request: Request):
+    if request.method == 'GET':
+        try:
+            name = request.query_params['name']
+            player = crud.get_player_by_name(name)
+            if not player:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                    detail="User with specified name does not exist")
+
+            return JSONResponse(content=player)
+
+        except KeyError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
+
+    # Could be else but it is more transparent
+    elif request.method == 'POST':
+        data = (await request.json()).values()
+        try:
+            name, profession = [data['name'], data['profession']]
+            new_player = service.create_player(name, profession)
+            return JSONResponse(content=new_player, status_code=status.HTTP_201_CREATED)
+
+        except IntegrityError:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="User with that name already exists")
+
+        except UnknownProfession:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Unknown profession")
+
+        except KeyError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
 
 
-async def get_players(request):
+async def players(request: Request):
     players = crud.get_players()
+    if not players['players']:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No players were found")
+
     return JSONResponse(content=players)
 
 
-async def attack_player(request):
+async def attack(request: Request):
     try:
-        data = await request.json()
-        player = crud.get_player_by_name(
-            request.path_params['name'])['players'][0]
-        enemy_player = crud.get_player_by_name(data['name'])['players'][0]
-        message = fight(player, enemy_player)
+        # Could use method .get() here however I want to provide a feedback about wrong input
+        player_name = request.path_params['name']
+        enemy_name = (await request.json())['name']
+        player = crud.get_player_by_name(player_name)
+        enemy = crud.get_player_by_name(enemy_name)
+        if not player:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Player not found")
 
-    except JSONDecodeError:
-        message = 'You didn\'t specify a player in a path or enemy in a body'
-        raise HTTPException(status_code=404, detail=message)
-    except IndexError:
-        message = 'Your player or enemy with specified nickname does not exist'
-        raise HTTPException(status_code=404, detail=message)
-    return JSONResponse(content=message)
+        if not enemy:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Enemy not found")
 
+        result = service.fight(player, enemy)
+        return JSONResponse(content=result)
 
-async def html_get_player(request):
-    name = request.path_params['name']
-    players = crud.get_player_by_name(name)
-    return templates.TemplateResponse('players.html', {'request': request, 'players': players})
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
 
-
-async def html_get_players(request):
-    players = crud.get_players()
-    return templates.TemplateResponse('players.html', {'request': request, 'players': players})
-
-
-async def create_player(request):
-    player_data = await request.form()
-    print(player_data)
-    crud.create_player(name=player_data['name'], profession=player_data['profession'],
-                       hp=player_data['hp'], attack_power=player_data['attack_power'])
-    return RedirectResponse(url='/players')
+    except StatusOffline:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Either you or enemy are not logged in")
 
 
-async def html_create_player(request):
-    return templates.TemplateResponse('form.html', {'request': request})
+async def login(request: Request):
+    try:
+        # Could use method .get() here however I want to provide a feedback about wrong input
+        name = request.path_params['name']
+        if not crud.get_player_by_name:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="Player with specified name does not exist")
+
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
+
+    result = crud.login(name)
+    return JSONResponse(content=result)
+
+
+async def logout(request: Request):
+    try:
+        # Could use method .get() here however I want to provide a feedback about wrong input
+        name = request.path_params['name']
+        if not crud.get_player_by_name:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="Player with specified name does not exist")
+
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
+
+    result = crud.logout(name)
+    return JSONResponse(content=result)
+
 
 routes = [
-    Route('/', homepage),
-    Route('/api/players', get_players),
-    Route('/api/player', get_player),
-    Route('/api/player', create_player, methods=['POST']),
-    Route('/api/player/{name}/attack', attack_player, methods=['GET', 'POST']),
-    Route('/players', html_get_players),
-    Route('/player/{name}', html_get_player),
-    Route('/player', html_create_player),
-    Mount('/static', StaticFiles(directory='static'), name='static')
+    Route('/', home),
+    Route('/api/players', players),
+    Route('/api/player', player, methods=['GET', 'POST']),
+    Route('/api/player/{name}/login', login),
+    Route('/api/player/{name}/logout', logout),
+    Route('/api/player/{name}/attack', attack, methods=['POST'])
 ]
 
-app = Starlette(debug=True, routes=routes)
+app = Starlette(routes=routes)

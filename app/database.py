@@ -9,9 +9,9 @@ DB_PATH = os.path.join(os.path.dirname(
 
 @contextmanager
 def connection():
+    conn = sqlite3.connect(DB_PATH)
     try:
-        conn = sqlite3.connect(DB_PATH)
-        yield conn
+        yield conn.cursor()
     finally:
         conn.commit()
         conn.close()
