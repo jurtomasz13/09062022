@@ -17,7 +17,7 @@ def to_json(players) -> dict:
     return players_dict
 
 
-def db_conn(func):
+def get_db(func):
     def wrapper(*args):
         with connection() as cursor:
             return func(cursor, *args)
