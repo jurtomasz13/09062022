@@ -15,10 +15,3 @@ def to_json(players) -> dict:
     else:
         return {}
     return players_dict
-
-
-def get_db(func):
-    def wrapper(*args):
-        with connection() as cursor:
-            return func(cursor, *args)
-    return wrapper

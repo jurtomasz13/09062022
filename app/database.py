@@ -15,3 +15,10 @@ def connection():
     finally:
         conn.commit()
         conn.close()
+
+
+def get_db(func):
+    def wrapper(*args):
+        with connection() as cursor:
+            return func(cursor, *args)
+    return wrapper
