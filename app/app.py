@@ -32,9 +32,10 @@ async def player(request: Request):
 
     # Could be else but it is more transparent
     elif request.method == 'POST':
-        data = (await request.json()).values()
+        data = await request.json()
         try:
-            name, profession = [data['name'], data['profession']]
+            print(data)
+            name, profession = data['name'], data['profession']
             new_player = service.create_player(name, profession)
             return JSONResponse(content=new_player, status_code=status.HTTP_201_CREATED)
 

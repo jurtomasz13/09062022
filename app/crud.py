@@ -5,14 +5,8 @@ from queries import *
 
 
 @db_conn
-def create_player(db: Cursor, name: str, profession: str, hp: int, attack: int) -> int:
-    params = {
-        'name': name,
-        'profession': profession,
-        'hp': hp,
-        'attack_power': attack
-    }
-    db.execute(CREATE_PLAYER, params)
+def create_player(db: Cursor, player_details: dict) -> int:
+    db.execute(CREATE_PLAYER, player_details)
     return db.lastrowid
 
 
@@ -41,20 +35,20 @@ def update_stats(db: Cursor, winner: str, loser: str) -> dict:
     return result
 
 
-@ db_conn
+@db_conn
 def get_players(db: Cursor) -> dict:
     players = db.execute(SELECT_ALL_PLAYERS).fetchall()
     return to_json(players)
 
 
-@ db_conn
+@db_conn
 def login(db: Cursor, name: str) -> dict:
     db.execute(SET_ONLINE, {'name': name})
     result = db.execute(SELECT_PLAYER_BY_NAME, {'name': name}).fetchone()
     return to_json(result)
 
 
-@ db_conn
+@db_conn
 def logout(db: Cursor, name: str) -> dict:
     db.execute(SET_OFFLINE, {'name': name})
     result = db.execute(SELECT_PLAYER_BY_NAME, {'name': name}).fetchone()

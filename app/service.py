@@ -33,25 +33,29 @@ def create_player(name: str, profession: str):
     PROFESSIONS = {
         'warrior': {
             'hp': 100,
-            'attack': 20
+            'attack_power': 20
         },
         'archer': {
             'hp': 80,
-            'attack': 25
+            'attack_power': 25
         },
         'mage': {
             'hp': 70,
-            'attack': 30
+            'attack_power': 30
         }
     }
 
-    if profession.lower() not in PROFESSIONS:
+    profession = profession.lower()
+
+    if profession not in PROFESSIONS:
         raise UnknownProfession()
 
-    profession = profession.capitalize()
-    hp, attack = [
-        PROFESSIONS[profession.lower()]['hp'],
-        PROFESSIONS[profession.lower()]['attack'],
-    ]
-    result = crud.create_player(name, profession, hp, attack)
+    player_details = {
+        'name': name,
+        'profession': profession.capitalize()
+    }
+
+    player_details.update(PROFESSIONS[profession])
+    result = crud.create_player(player_details)
+
     return crud.get_player_by_id(result)
