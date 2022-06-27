@@ -39,10 +39,10 @@ def to_json(player) -> dict:
     if type(player) is list:
         players_dict = {'players': []}
         for entity in player:
-            entity = {**schemas.Player(rowid=entity.rowid, name=entity.name, profession=entity.profession, hp=entity.hp,
-                                       attack_power=entity.attack_power, status=entity.status, kills=entity.kills, deaths=entity.deaths).dict()}
-            players_dict['players'].append(entity)
-        return players_dict
+            entity_dict = entity.__dict__.copy()
+            del entity_dict[list(entity_dict.keys())[0]]
+            players_dict['players'].append(entity_dict)
     if type(player) is models.Player:
-        return {**schemas.Player(rowid=player.rowid, name=player.name, profession=player.profession, hp=player.hp,
-                                 attack_power=player.attack_power, status=player.status, kills=player.kills, deaths=player.deaths).dict()}
+        players_dict = player.__dict__.copy()
+        del players_dict[list(players_dict.keys())[0]]
+    return players_dict

@@ -15,6 +15,11 @@ def create_player(db: Session, player_details: dict) -> int:
 
 @get_db
 def get_player_by_name(db: Session, name: str) -> dict:
+    player = db.query(models.Player).filter(models.Player.name == name).first()
+    player_dict = player.__dict__.copy()
+
+    del player_dict[list(player_dict.keys())[0]]
+    print(player_dict)
     return to_json(db.query(models.Player).filter(models.Player.name == name).first())
 
 
