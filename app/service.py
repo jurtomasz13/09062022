@@ -1,26 +1,43 @@
-from random import randint, sample
+from random import sample
 
-from exceptions import UnknownProfession, StatusOffline
+from exceptions import UnknownProfession, StatusOffline, PlayerAlreadyOnline, PlayerAlreadyOffline
 import crud
+import utils
+
+
+def attack(player: dict, enemy: dict):
+    STATUS = utils.Status.OFFLINE.name.lower()
+
+    if player['status'] == STATUS or enemy['status'] == STATUS:
+        raise StatusOffline()
+
+    dmg = utils.rand_dmg(player)
+
+    if enemy['hp'] > 0:
+        enemy['hp'] -= dmg
+
+    if enemy['hp'] <= 0:
+        crud.set_status(enemy['name'], STATUS)
+        crud.update_health(
+            enemy['name'], utils.PROFESSIONS[enemy['profession'].lower()]['hp'])
+        return crud.update_stats(player['name'], enemy['name'])
+
+    crud.update_health(enemy['name'], enemy['hp'])
+    return {'message': f"Attacked {enemy['name']} for {dmg} dmg "}
 
 
 def fight(player: dict, enemy: dict):
-    if player['status'] == 'offline' or enemy['status'] == 'offline':
+    STATUS = utils.Status.OFFLINE.name.lower()
+
+    if player['status'] == STATUS or enemy['status'] == STATUS:
         raise StatusOffline()
-
-    LOWER_MULTIPLIER = 0.6
-    HIGHER_MULTIPLIER = 1.4
-
-    def rand_dmg(player: dict) -> int:
-        return randint(player['attack_power']
-                       * LOWER_MULTIPLIER, player['attack_power']*HIGHER_MULTIPLIER)
 
     first, second = sample([player, enemy], 2)
 
     while first['hp'] > 0 and second['hp'] > 0:
-        second['hp'] -= rand_dmg(first)
+        second['hp'] -= utils.rand_dmg(first)
         if first['hp'] > 0 and second['hp'] > 0:
-            first['hp'] -= rand_dmg(second)
+            first['hp'] -= utils.rand_dmg(second)
 
     if first['hp'] > 0:
         result = crud.update_stats(first['name'], second['name'])
@@ -30,24 +47,9 @@ def fight(player: dict, enemy: dict):
 
 
 def create_player(name: str, profession: str):
-    PROFESSIONS = {
-        'warrior': {
-            'hp': 100,
-            'attack_power': 20
-        },
-        'archer': {
-            'hp': 80,
-            'attack_power': 25
-        },
-        'mage': {
-            'hp': 70,
-            'attack_power': 30
-        }
-    }
-
     profession = profession.lower()
 
-    if profession not in PROFESSIONS:
+    if profession not in utils.PROFESSIONS:
         raise UnknownProfession()
 
     player_details = {
@@ -55,7 +57,26 @@ def create_player(name: str, profession: str):
         'profession': profession.capitalize()
     }
 
-    player_details.update(PROFESSIONS[profession])
-    result = crud.create_player(player_details)
+    player_details.update(utils.PROFESSIONS[profession])
 
-    return crud.get_player_by_id(result)
+    return crud.create_player(player_details)
+
+
+def login(name: str):
+    STATUS = utils.Status.ONLINE.name.lower()
+
+    player = crud.get_player_by_name(name)
+    if player['status'] == STATUS:
+        raise PlayerAlreadyOnline()
+
+    return crud.set_status(name, STATUS)
+
+
+def logout(name: str):
+    STATUS = utils.Status.OFFLINE.name.lower()
+
+    player = crud.get_player_by_name(name)
+    if player['status'] == STATUS:
+        raise PlayerAlreadyOffline()
+
+    return crud.set_status(name, STATUS)

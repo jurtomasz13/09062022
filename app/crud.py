@@ -1,55 +1,70 @@
-from sqlite3 import Cursor
-
-from utils import to_json, get_db
-from queries import *
-
-
-@get_db
-def create_player(db: Cursor, player_details: dict) -> int:
-    db.execute(CREATE_PLAYER, player_details)
-    return db.lastrowid
+from sqlalchemy.orm import Session
+from database import get_db
+from utils import to_json
+import models
 
 
 @get_db
-def get_player_by_name(db: Cursor, name: str) -> dict:
-    player = db.execute(SELECT_PLAYER_BY_NAME, {'name': name}).fetchone()
+def create_player(db: Session, player_details: dict) -> int:
+    db_player = models.Player(**player_details)
+    db.add(db_player)
+    db.commit()
+    return to_json(db_player)
+
+
+@get_db
+def get_player_by_name(db: Session, name: str) -> dict:
+    return to_json(db.query(models.Player).filter(models.Player.name == name).first())
+
+
+@get_db
+def get_player_by_id(db: Session, id: int) -> dict:
+    return to_json(db.query(models.Player).filter(models.Player.rowid == id).first())
+
+
+@get_db
+def update_health(db: Session, name: str, hp: int) -> dict:
+    player = db.query(models.Player).filter(models.Player.name == name).first()
+    player.hp = hp
+    db.commit()
     return to_json(player)
 
 
 @get_db
-def get_player_by_id(db: Cursor, id: int) -> dict:
-    player = db.execute(SELECT_PLAYER_BY_ID, {'rowid': id}).fetchone()
-    return to_json(player)
+def update_stats(db: Session, winner: str, loser: str) -> dict:
+    winner = db.query(models.Player).filter(
+        models.Player.name == winner).first()
+    loser = db.query(models.Player).filter(models.Player.name == loser).first()
 
+    winner.kills += 1
+    loser.deaths += 1
 
-@get_db
-def update_stats(db: Cursor, winner: str, loser: str) -> dict:
-    db.execute(
-        ADD_KILL, {'name': winner})
-    db.execute(
-        ADD_DEATH, {'name': loser})
+    db.commit()
+
     result = {
-        'winner': to_json(db.execute(SELECT_PLAYER_BY_NAME, {'name': winner}).fetchone()),
-        'loser': to_json(db.execute(SELECT_PLAYER_BY_NAME, {'name': loser}).fetchone())
+        'killer': to_json(winner),
+        'loser': to_json(loser)
     }
+
     return result
 
 
 @get_db
-def get_players(db: Cursor) -> dict:
-    players = db.execute(SELECT_ALL_PLAYERS).fetchall()
+def get_players(db: Session) -> dict:
+    return to_json(db.query(models.Player).all())
+
+
+@get_db
+def set_status(db: Session, name: str, status: str) -> dict:
+    status = str(status)
+    player = db.query(models.Player).filter(models.Player.name == name).first()
+    player.status = status
+    db.commit()
+    return to_json(player)
+
+
+@get_db
+def test(db: Session) -> dict:
+    player = db.query(models.Player).first()
+    players = db.query(models.Player).all()
     return to_json(players)
-
-
-@get_db
-def login(db: Cursor, name: str) -> dict:
-    db.execute(SET_ONLINE, {'name': name})
-    result = db.execute(SELECT_PLAYER_BY_NAME, {'name': name}).fetchone()
-    return to_json(result)
-
-
-@get_db
-def logout(db: Cursor, name: str) -> dict:
-    db.execute(SET_OFFLINE, {'name': name})
-    result = db.execute(SELECT_PLAYER_BY_NAME, {'name': name}).fetchone()
-    return to_json(result)
