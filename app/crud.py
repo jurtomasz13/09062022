@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
-from .database import get_db
-from .utils import to_json
-from . import models
+from database import get_db
+from utils import to_json
+import models
 
 
 @get_db
@@ -10,7 +10,9 @@ def create_player(db: Session, player_details: dict) -> int:
     db_player = models.Player(**player_details)
     db.add(db_player)
     db.commit()
-    return to_json(db_player)
+    player = db.query(models.Player).filter(
+        models.Player.name == db_player.name).first()
+    return to_json(player)
 
 
 @get_db
@@ -62,10 +64,3 @@ def set_status(db: Session, name: str, status: str) -> dict:
     player.status = status
     db.commit()
     return to_json(player)
-
-
-@get_db
-def test(db: Session) -> dict:
-    player = db.query(models.Player).first()
-    players = db.query(models.Player).all()
-    return to_json(players)
