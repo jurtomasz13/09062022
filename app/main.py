@@ -10,13 +10,13 @@ from starlette import status
 from starlette_jwt import JWTAuthenticationBackend
 from sqlalchemy.exc import IntegrityError
 
-from exceptions import UnknownProfession, StatusOffline, PlayerAlreadyOnline, PlayerAlreadyOffline
-from database import engine
-import config
-import crud
-import models
-import service
-import security
+from .exceptions import UnknownProfession, StatusOffline, PlayerAlreadyOnline, PlayerAlreadyOffline
+from .database import engine
+from . import config
+from . import crud
+from . import models
+from . import service
+from . import security
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -44,8 +44,8 @@ async def player(request: Request):
         data = await request.json()
         try:
             name, profession = data['name'], data['profession']
-            new_player = service.create_player(name, profession)
-            return JSONResponse(content=new_player, status_code=status.HTTP_201_CREATED)
+            player = service.create_player(name, profession)
+            return JSONResponse(content=player, status_code=status.HTTP_201_CREATED)
 
         except IntegrityError:
             raise HTTPException(
@@ -182,4 +182,4 @@ middleware = [
                backend=JWTAuthenticationBackend(username_field='sub', prefix='Bearer', secret_key=config.JWT_SECRET_KEY, algorithm=config.JWT_ALGORITHM), on_error=on_auth_error)
 ]
 
-app = Starlette(routes=routes, middleware=middleware)
+main_app = Starlette(routes=routes, middleware=middleware)

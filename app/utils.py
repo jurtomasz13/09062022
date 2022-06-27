@@ -1,5 +1,4 @@
-import schemas
-import models
+from . import models
 
 from random import randint
 from enum import Enum

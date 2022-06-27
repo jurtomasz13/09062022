@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
-from database import get_db
-from utils import to_json
-import models
+from .database import get_db
+from .utils import to_json
+from . import models
 
 
 @get_db

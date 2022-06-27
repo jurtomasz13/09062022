@@ -1,8 +1,8 @@
 from random import sample
 
-from exceptions import UnknownProfession, StatusOffline, PlayerAlreadyOnline, PlayerAlreadyOffline
-import crud
-import utils
+from .exceptions import UnknownProfession, StatusOffline, PlayerAlreadyOnline, PlayerAlreadyOffline
+from . import crud
+from . import utils
 
 
 def attack(player: dict, enemy: dict):
