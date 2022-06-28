@@ -41,7 +41,9 @@ async def player(request: Request):
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
 
     elif request.method == 'POST':
+        print('before')
         data = await request.json()
+        print('after')
         try:
             name, profession = data['name'], data['profession']
             player = service.create_player(name, profession)
