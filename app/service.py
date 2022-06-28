@@ -1,8 +1,8 @@
 from random import sample
 
-from .exceptions import UnknownProfession, StatusOffline, PlayerAlreadyOnline, PlayerAlreadyOffline
-from . import crud
-from . import utils
+from exceptions import UnknownProfession, StatusOffline, PlayerAlreadyOnline, PlayerAlreadyOffline
+import crud
+import utils
 
 
 def attack(player: dict, enemy: dict):
@@ -68,8 +68,9 @@ def login(name: str):
     player = crud.get_player_by_name(name)
     if player['status'] == STATUS:
         raise PlayerAlreadyOnline()
-
-    return crud.set_status(name, STATUS)
+    result = crud.set_status(name, STATUS)
+    print(result)
+    return result
 
 
 def logout(name: str):

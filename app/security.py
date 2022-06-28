@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from jose import jwt
 
-from .crud import get_player_by_name
-from . import config
+from crud import get_player_by_name
+import config
 
 
 def authenticate_user(username: str):

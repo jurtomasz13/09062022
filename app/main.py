@@ -10,20 +10,20 @@ from starlette import status
 from starlette_jwt import JWTAuthenticationBackend
 from sqlalchemy.exc import IntegrityError
 
-from .exceptions import UnknownProfession, StatusOffline, PlayerAlreadyOnline, PlayerAlreadyOffline
-from .database import engine
-from . import config
-from . import crud
-from . import models
-from . import service
-from . import security
+from exceptions import UnknownProfession, StatusOffline, PlayerAlreadyOnline, PlayerAlreadyOffline
+from database import engine
+import config
+import crud
+import models
+import service
+import security
 
 
 models.Base.metadata.create_all(bind=engine)
 
 
-async def on_auth_error(request: Request, exc: Exception):
-    return JSONResponse({'error': exc.message, 'status': exc.status_code}, status_code=exc.status_code)
+def on_auth_error(request: Request, exc: Exception):
+    return JSONResponse({'error': str(exc), 'status_code': status.HTTP_401_UNAUTHORIZED}, status_code=status.HTTP_401_UNAUTHORIZED)
 
 
 async def player(request: Request):
@@ -182,4 +182,4 @@ middleware = [
                backend=JWTAuthenticationBackend(username_field='sub', prefix='Bearer', secret_key=config.JWT_SECRET_KEY, algorithm=config.JWT_ALGORITHM), on_error=on_auth_error)
 ]
 
-main_app = Starlette(routes=routes, middleware=middleware)
+app = Starlette(routes=routes, middleware=middleware)

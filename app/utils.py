@@ -1,4 +1,4 @@
-from . import models
+import models
 
 from random import randint
 from enum import Enum
@@ -41,7 +41,8 @@ def to_json(player) -> dict:
             entity_dict = entity.__dict__.copy()
             del entity_dict[list(entity_dict.keys())[0]]
             players_dict['players'].append(entity_dict)
+        return players_dict
     if type(player) is models.Player:
         players_dict = player.__dict__.copy()
         del players_dict[list(players_dict.keys())[0]]
-    return players_dict
+        return players_dict

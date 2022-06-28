@@ -7,11 +7,10 @@ import models
 
 @get_db
 def create_player(db: Session, player_details: dict) -> int:
-    db_player = models.Player(**player_details)
-    db.add(db_player)
+    player = models.Player(**player_details)
+    db.add(player)
     db.commit()
-    player = db.query(models.Player).filter(
-        models.Player.name == db_player.name).first()
+    db.refresh(player)
     return to_json(player)
 
 
@@ -30,6 +29,7 @@ def update_health(db: Session, name: str, hp: int) -> dict:
     player = db.query(models.Player).filter(models.Player.name == name).first()
     player.hp = hp
     db.commit()
+    db.refresh(player)
     return to_json(player)
 
 
@@ -43,6 +43,8 @@ def update_stats(db: Session, winner: str, loser: str) -> dict:
     loser.deaths += 1
 
     db.commit()
+    db.refresh(winner)
+    db.refresh(loser)
 
     result = {
         'killer': to_json(winner),
@@ -63,4 +65,5 @@ def set_status(db: Session, name: str, status: str) -> dict:
     player = db.query(models.Player).filter(models.Player.name == name).first()
     player.status = status
     db.commit()
+    db.refresh(player)
     return to_json(player)
