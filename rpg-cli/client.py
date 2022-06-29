@@ -2,41 +2,46 @@ import requests
 
 
 class Client():
-    url = 'http://localhost:8000'
-
-    def __init__(self, player_name=None, enemy_name=None, profession=None) -> None:
-        self.player_name: str = player_name
-        self.enemy_name: str = enemy_name
-        self.profession: str = profession
+    def __init__(self,
+                 player_name=None,
+                 enemy_name=None,
+                 profession=None) -> None:
+        self.url = 'http://localhost:8000'
+        self.player_name: str | None = player_name
+        self.enemy_name: str | None = enemy_name
+        self.profession: str | None = profession
         self.token: str = None
+        self.response: requests.Response | None = None
 
     @property
     def header(self) -> dict:
         return {'Authorization': f'Bearer {self.token}'}
 
+    @property
+    def return_checked_response(self) -> dict:
+        result: dict = {}
+        try:
+            if self.response.ok:
+                result = self.response.json()
+            else:
+                result = {self.response.status_code: self.response.text}
+        except AttributeError:
+            pass
+        return result
+
     def get_player(self) -> dict:
         if self.player_name is None:
             return {'message': 'You need to provide a player name'}
 
-        response = requests.get(
+        self.response = requests.get(
             self.url+f'/api/player?name={self.player_name}')
 
-        if response.ok:
-            result = response.json()
-        else:
-            result = {response.status_code: response.text}
-
-        return result
+        return self.return_checked_response
 
     def get_players(self) -> dict:
-        response = requests.get(self.url+'/api/players')
+        self.response = requests.get(self.url+'/api/players')
 
-        if response.ok:
-            result = response.json()
-        else:
-            result = {response.status_code: response.text}
-
-        return result
+        return self.return_checked_response
 
     def create_player(self) -> dict:
         if self.player_name is None and self.profession is None:
@@ -51,57 +56,38 @@ class Client():
             'profession': self.profession
         }
 
-        response = requests.post(self.url+'/api/player', json=body)
+        self.response = requests.post(self.url+'/api/player', json=body)
 
-        if response.ok:
-            result = response.json()
-        else:
-            result = {response.status_code: response.text}
+        return self.return_checked_response
 
-        return result
-
-    def get_token(self,) -> dict:
+    def get_token(self) -> dict:
         if self.player_name is None:
             return {'message': 'You need to provide a player name'}
 
-        response = requests.post(
+        self.response = requests.post(
             self.url+'/token', json={'name': self.player_name})
+        if self.response.ok:
+            self.token = self.response.json()['access_token']
 
-        if response.ok:
-            self.token = response.json()['access_token']
-            result = response.json()
-        else:
-            result = {response.status_code: response.text}
-
-        return result
+        return self.return_checked_response
 
     def login(self) -> dict:
         if self.player_name is None:
             return {'message': 'You need to provide a player name'}
 
-        response = requests.post(
+        self.response = requests.post(
             self.url+f'/api/player/{self.player_name}/login')
 
-        if response.ok:
-            result = response.json()
-        else:
-            result = {response.status_code: response.text}
-
-        return result
+        return self.return_checked_response
 
     def logout(self) -> dict:
         if self.player_name is None:
             return {'message': 'You need to provide a player name'}
 
-        response = requests.post(
+        self.response = requests.post(
             self.url+f'/api/player/{self.player_name}/logout')
 
-        if response.ok:
-            result = response.json()
-        else:
-            result = {response.status_code: response.text}
-
-        return result
+        return self.return_checked_response
 
     def attack(self) -> dict:
         if self.player_name is None and self.enemy_name is None:
@@ -112,24 +98,14 @@ class Client():
             return {'message': 'You need to provide an enemy name'}
 
         self.get_token()
-        response = requests.post(self.url+'/api/player/attack',
-                                 json={'name': self.enemy_name}, headers=self.header)
+        self.response = requests.post(self.url+'/api/player/attack',
+                                      json={'name': self.enemy_name}, headers=self.header)
 
-        if response.ok:
-            result = response.json()
-        else:
-            result = {response.status_code: response.text}
-
-        return result
+        return self.return_checked_response
 
     def duel(self) -> dict:
         self.token = self.get_token()
-        response = requests.post(self.url+'/api/player/attack',
-                                 json={'name': self.enemy_name}, headers=self.header)
+        self.response = requests.post(self.url+'/api/player/attack',
+                                      json={'name': self.enemy_name}, headers=self.header)
 
-        if response.ok:
-            result = response.json()
-        else:
-            result = {response.status_code: response.text}
-
-        return result
+        return self.return_checked_response
