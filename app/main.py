@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 from starlette.applications import Starlette
 from starlette.authentication import requires
 from starlette.middleware import Middleware
@@ -41,21 +42,22 @@ async def player(request: Request):
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
 
     elif request.method == 'POST':
-        print('before')
-        data = await request.json()
-        print('after')
         try:
+            data = await request.json()
             name, profession = data['name'], data['profession']
             player = service.create_player(name, profession)
             return JSONResponse(content=player, status_code=status.HTTP_201_CREATED)
 
         except IntegrityError:
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="User with that name already exists")
+                status_code=status.HTTP_409_CONFLICT, detail="Player with that name already exists")
         except UnknownProfession:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Unknown profession")
         except KeyError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
+        except JSONDecodeError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
 
@@ -93,6 +95,9 @@ async def attack(request: Request):
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
+    except JSONDecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
     except StatusOffline:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Either you or enemy are not logged in")
@@ -122,6 +127,8 @@ async def duel(request: Request):
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
+    except JSONDecodeError:
+        pass
     except StatusOffline:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Either you or enemy are not logged in")
@@ -129,7 +136,7 @@ async def duel(request: Request):
 
 async def login(request: Request):
     name = request.path_params['name']
-    if not crud.get_player_by_name:
+    if not crud.get_player_by_name(name):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Player with specified name does not exist")
 
@@ -158,7 +165,11 @@ async def logout(request: Request):
 
 
 async def token(request: Request):
-    body = await request.json()
+    try:
+        body = await request.json()
+    except JSONDecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Bad input provided")
     username = body.get('name')
     user = security.authenticate_user(username)
     if not user:

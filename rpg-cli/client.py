@@ -10,6 +10,10 @@ class Client():
         self.profession: str = profession
         self.token: str = None
 
+    @property
+    def header(self) -> dict:
+        return {'Authorization': f'Bearer {self.token}'}
+
     def get_player(self) -> dict:
         if self.player_name is None:
             return {'message': 'You need to provide a player name'}
@@ -19,6 +23,9 @@ class Client():
 
         if response.ok:
             result = response.json()
+        else:
+            result = {response.status_code: response.text}
+
         return result
 
     def get_players(self) -> dict:
@@ -26,6 +33,9 @@ class Client():
 
         if response.ok:
             result = response.json()
+        else:
+            result = {response.status_code: response.text}
+
         return result
 
     def create_player(self) -> dict:
@@ -36,17 +46,17 @@ class Client():
         elif self.profession is None:
             return {'message': 'You need to provide a profession'}
 
-        data = {
+        body = {
             'name': self.player_name,
             'profession': self.profession
         }
 
-        response = requests.post(self.url+'/api/player', json=data)
+        response = requests.post(self.url+'/api/player', json=body)
 
         if response.ok:
             result = response.json()
-        elif response.status_code == 409:
-            result = {'message': 'Player with this name already exists'}
+        else:
+            result = {response.status_code: response.text}
 
         return result
 
@@ -60,6 +70,8 @@ class Client():
         if response.ok:
             self.token = response.json()['access_token']
             result = response.json()
+        else:
+            result = {response.status_code: response.text}
 
         return result
 
@@ -72,6 +84,9 @@ class Client():
 
         if response.ok:
             result = response.json()
+        else:
+            result = {response.status_code: response.text}
+
         return result
 
     def logout(self) -> dict:
@@ -83,6 +98,9 @@ class Client():
 
         if response.ok:
             result = response.json()
+        else:
+            result = {response.status_code: response.text}
+
         return result
 
     def attack(self) -> dict:
@@ -99,6 +117,9 @@ class Client():
 
         if response.ok:
             result = response.json()
+        else:
+            result = {response.status_code: response.text}
+
         return result
 
     def duel(self) -> dict:
@@ -108,8 +129,7 @@ class Client():
 
         if response.ok:
             result = response.json()
-        return result
+        else:
+            result = {response.status_code: response.text}
 
-    @property
-    def header(self) -> dict:
-        return {'Authorization': f'Bearer {self.token}'}
+        return result

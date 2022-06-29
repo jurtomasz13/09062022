@@ -23,7 +23,7 @@ def attack(player: dict, enemy: dict):
         return crud.update_stats(player['name'], enemy['name'])
 
     crud.update_health(enemy['name'], enemy['hp'])
-    return {'message': f"Attacked {enemy['name']} for {dmg} dmg "}
+    return {'message': f"Attacked {enemy['name']} for {dmg} dmg"}
 
 
 def fight(player: dict, enemy: dict):

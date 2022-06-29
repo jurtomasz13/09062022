@@ -1,6 +1,7 @@
 from client import Client
 
 import argparse
+import json
 
 
 parser = argparse.ArgumentParser()
@@ -17,17 +18,18 @@ command = args.command
 client = Client(player_name=args.player_name,
                 enemy_name=args.enemy_name, profession=args.profession)
 
-if command == 'get_players':
-    print(client.get_players())
-elif command == 'get_player':
-    print(client.get_player())
-elif command == 'create_player':
-    print(client.create_player())
-elif command == 'get_token':
-    print(client.get_token())
-elif command == 'login':
-    print(client.login())
-elif command == 'logout':
-    print(client.logout())
-elif command == 'attack':
-    print(client.attack())
+
+def pretty_json(result):
+    return json.dumps(result, indent=2, sort_keys=True)
+
+
+methods = [method for method in dir(client) if callable(
+    getattr(client, method)) and not method.startswith('__')]
+
+options = {method: getattr(client, method) for method in methods}
+
+if command in options.keys():
+    result = options[command]()
+    print(pretty_json(result))
+else:
+    print('Wrong command')
