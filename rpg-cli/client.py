@@ -104,7 +104,14 @@ class Client():
         return self.return_checked_response
 
     def duel(self) -> dict:
-        self.token = self.get_token()
+        if self.player_name is None and self.enemy_name is None:
+            return {'message': 'You need to provide a player and an enemy names'}
+        elif self.player_name is None:
+            return {'message': 'You need to provide a player name'}
+        elif self.enemy_name is None:
+            return {'message': 'You need to provide an enemy name'}
+
+        self.get_token()
         self.response = requests.post(self.url+'/api/player/attack',
                                       json={'name': self.enemy_name}, headers=self.header)
 
