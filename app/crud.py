@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
+import models
 from database import get_db
 from utils import to_json
-import models
 
 
 @get_db
@@ -46,10 +46,7 @@ def update_stats(db: Session, winner: str, loser: str) -> dict:
     db.refresh(winner)
     db.refresh(loser)
 
-    result = {
-        'killer': to_json(winner),
-        'loser': to_json(loser)
-    }
+    result = {"killer": to_json(winner), "loser": to_json(loser)}
 
     return result
 

@@ -1,14 +1,13 @@
+import os
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from contextlib import contextmanager
-import os
 
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "database.db")
 
-DB_PATH = os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), 'database.db')
-
-DB_URL = f'sqlite:///{DB_PATH}'
+DB_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False})
 
@@ -35,7 +34,7 @@ Base = declarative_base()
 #         db.close()
 
 
-class BaseConnection():
+class BaseConnection:
     @staticmethod
     @contextmanager
     def connection():
@@ -54,4 +53,5 @@ def get_db(func):
     def wrapper(*args):
         with TestConnection.connection() as cursor:
             return func(cursor, *args)
+
     return wrapper
