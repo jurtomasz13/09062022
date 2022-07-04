@@ -42,6 +42,5 @@ def get_session(func):
 
     def wrapper(*args):
         with Connection.connection() as session:
-            func(args, session)
-
+            return func(*args, session=session)
     return wrapper

@@ -40,24 +40,22 @@ def rand_dmg(player: dict) -> int:
     )
 
 
-def to_json(player) -> dict:
-    """Converts player model to dict"""
-    player_as_dict = {
-        key: value
-        for key, value in player.__dict__.items()
-        if key in players_model_vars
-    }
-    return player_as_dict
-
-
-def to_json_list(players) -> dict:
-    """Converts list of player models to dict"""
-    players_dict = {"players": []}
-    for player in players:
-        player_as_dict = {
+def to_json(players: list | models.Player) -> dict:
+    """Converts players model to dict"""
+    if isinstance(players, models.Player):
+        player = players
+        players_dict = {
             key: value
             for key, value in player.__dict__.items()
             if key in players_model_vars
         }
-        players_dict["players"].append(player_as_dict)
+    if isinstance(players, list):
+        players_dict = {"players": []}
+        for player in players:
+            player_as_dict = {
+                key: value
+                for key, value in player.__dict__.items()
+                if key in players_model_vars
+            }
+            players_dict["players"].append(player_as_dict)
     return players_dict

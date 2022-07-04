@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 import models
 from database import get_session
-from utils import to_json, to_json_list
+from utils import to_json
 
 
 @get_session
@@ -73,7 +73,9 @@ def update_stats(winner: str, loser: str, session: Session) -> dict:
 @get_session
 def get_players(session: Session) -> dict:
     """Returns a list of players"""
-    return to_json_list(session.query(models.Player).all())
+    players = to_json(session.query(models.Player).all())
+    print(f"HEHE: {players}")
+    return players
 
 
 @get_session

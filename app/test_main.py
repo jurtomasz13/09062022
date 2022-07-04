@@ -6,7 +6,7 @@ import json
 from contextlib import contextmanager
 
 import pytest
-from database import TestConnection
+from database import Connection
 from main import app
 from models import Base
 from sqlalchemy import create_engine
@@ -26,20 +26,29 @@ JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJVc2VyXzEifQ.Gp3B7nV
 
 @contextmanager
 def connection():
-    db: Session = TestingSessionLocal()
+    session: Session = TestingSessionLocal()
     try:
-        yield db
+        yield session
     finally:
-        db.close()
+        session.close()
+
+
+def seed_database(players):
+    with connection() as session:
+        for player in players:
+            session.add(player)
+        session.commit()
 
 
 @pytest.fixture
-def test_arrange():
-    setattr(TestConnection, "connection", connection)
+def setup_database():
+    setattr(Connection, "connection", connection)
     Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
 
 
-def test_create_player(test_arrange):
+def test_create_player(setup_database):
     data = {"name": "User_1", "profession": "Warrior"}
 
     expected = {
