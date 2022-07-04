@@ -1,3 +1,5 @@
+"""Module that connects commands to their coresponding methods from client.py"""
+
 import argparse
 import json
 
@@ -20,6 +22,7 @@ client = Client(
 
 
 def pretty_json(json_data):
+    """Returns prettiefied JSON representation of the given data"""
     return json.dumps(json_data, indent=2, sort_keys=True)
 
 

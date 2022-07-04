@@ -1,3 +1,7 @@
+"""Module for handling requests and responses from API"""
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+
 import requests
 
 
@@ -30,8 +34,7 @@ class Client:
         if self.player_name is None:
             return {"message": "You need to provide a player name"}
 
-        self.response = requests.get(
-            self.url + f"/api/player?name={self.player_name}")
+        self.response = requests.get(self.url + f"/api/player?name={self.player_name}")
 
         return self.return_checked_response
 
