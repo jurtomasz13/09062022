@@ -1,18 +1,17 @@
+"""Module for exceptions"""
+
+
 class PlayerAlreadyOffline(Exception):
-    def __init__(self, message=None):
-        self.message = message
+    """Exception raised when player is already offline"""
 
 
 class PlayerAlreadyOnline(Exception):
-    def __init__(self, message=None):
-        self.message = message
+    """Exception raised when player is already online"""
 
 
 class StatusOffline(Exception):
-    def __init__(self, message=None):
-        self.message = message
+    """Exception raised when player status is offline"""
 
 
 class UnknownProfession(Exception):
-    def __init__(self, message=None):
-        self.message = message
+    """Exception raised when specified profession does not exist"""

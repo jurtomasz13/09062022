@@ -1,9 +1,12 @@
+"""Module responsible for configuration of the database connection"""
+# pylint: disable=too-few-public-methods
+
 import os
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "database.db")
 
@@ -15,43 +18,30 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-# @contextmanager
-# def connection():
-#     conn = sqlite3.connect(DB_PATH)
-#     try:
-#         yield conn.cursor()
-#     finally:
-#         conn.commit()
-#         conn.close()
-
-
-# @contextmanager
-# def connection():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
-
 
 class BaseConnection:
+    """Class for creating a database session"""
+
     @staticmethod
     @contextmanager
-    def connection():
-        db = SessionLocal()
+    def connection() -> Session:
+        """Create and yield a session"""
+        session = SessionLocal()
         try:
-            yield db
+            yield session
         finally:
-            db.close()
+            session.close()
 
 
-class TestConnection(BaseConnection):
-    pass
+class Connection(BaseConnection):
+    """Additional class that inherits from BaseConnection made for testing with pytest"""
 
 
-def get_db(func):
+def get_session(func):
+    """Decorator for providing a session"""
+
     def wrapper(*args):
-        with TestConnection.connection() as cursor:
-            return func(cursor, *args)
+        with Connection.connection() as session:
+            func(args, session)
 
     return wrapper

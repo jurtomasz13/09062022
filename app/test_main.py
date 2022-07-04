@@ -1,14 +1,17 @@
+"""Tests for main.py"""
+# pylint: disable=missing-function-docstring
+# pylint: disable=unused-argument
+
 import json
 from contextlib import contextmanager
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
-from starlette.testclient import TestClient
-
 from database import TestConnection
 from main import app
 from models import Base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from starlette.testclient import TestClient
 
 client = TestClient(app)
 
@@ -126,7 +129,7 @@ def test_post_login():
     }
 
     response = client.post(f"api/player/{name}/login")
-    client.post(f"api/player/User_2/login")
+    client.post("api/player/User_2/login")
 
     assert response.status_code == 200
     assert response.json() == expected
@@ -147,7 +150,7 @@ def test_post_logout():
     }
 
     response = client.post(f"api/player/{name}/logout")
-    client.post(f"api/player/User_1/login")
+    client.post("api/player/User_1/login")
 
     assert response.status_code == 200
     assert response.json() == expected

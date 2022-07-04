@@ -1,15 +1,24 @@
+"""Module for business logic"""
+# pylint: disable=invalid-name
+# pylint: disable=no-value-for-parameter
+
 from random import sample
 
 import crud
 import utils
-from exceptions import (PlayerAlreadyOffline, PlayerAlreadyOnline,
-                        StatusOffline, UnknownProfession)
+from exceptions import (
+    PlayerAlreadyOffline,
+    PlayerAlreadyOnline,
+    StatusOffline,
+    UnknownProfession,
+)
 
 
 def attack(player: dict, enemy: dict):
+    """If both players are online, attacks the enemy based on the player's attack_power"""
     STATUS = utils.Status.OFFLINE.name.lower()
 
-    if player["status"] == STATUS or enemy["status"] == STATUS:
+    if STATUS in (player["status"], enemy["status"]):
         raise StatusOffline()
 
     dmg = utils.rand_dmg(player)
@@ -29,9 +38,10 @@ def attack(player: dict, enemy: dict):
 
 
 def fight(player: dict, enemy: dict):
+    """If both players are online, imitates the duel between the two players"""
     STATUS = utils.Status.OFFLINE.name.lower()
 
-    if player["status"] == STATUS or enemy["status"] == STATUS:
+    if STATUS in (player["status"], enemy["status"]):
         raise StatusOffline()
 
     first, second = sample([player, enemy], 2)
@@ -49,6 +59,7 @@ def fight(player: dict, enemy: dict):
 
 
 def create_player(name: str, profession: str):
+    """If profession exists, creates a new player with the given name"""
     profession = profession.lower()
 
     if profession not in utils.PROFESSIONS:
@@ -62,17 +73,18 @@ def create_player(name: str, profession: str):
 
 
 def login(name: str):
+    """Changes player's status to ONLINE if it's not already"""
     STATUS = utils.Status.ONLINE.name.lower()
 
     player = crud.get_player_by_name(name)
     if player["status"] == STATUS:
         raise PlayerAlreadyOnline()
     result = crud.set_status(name, STATUS)
-    print(result)
     return result
 
 
 def logout(name: str):
+    """Changes player's status to OFFLINE if it's not already"""
     STATUS = utils.Status.OFFLINE.name.lower()
 
     player = crud.get_player_by_name(name)

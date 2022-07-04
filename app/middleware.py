@@ -1,16 +1,20 @@
+"""Module that holds middleware class for authentication"""
+
 from typing import Tuple, Union
 
+from authlib.jose import jwt
 from starlette.authentication import (
     AuthCredentials,
     AuthenticationBackend,
-    SimpleUser,
     AuthenticationError,
     BaseUser,
+    SimpleUser,
 )
-from authlib.jose import jwt
 
 
 class JWTAuthenticationBackend(AuthenticationBackend):
+    """Class that authenticates user using JWT from OAuth"""
+
     def __init__(
         self,
         prefix: str = "Bearer",
@@ -26,24 +30,22 @@ class JWTAuthenticationBackend(AuthenticationBackend):
         """Parses the Authorization header and returns only the token"""
         try:
             scheme, token = authorization.split()
-        except ValueError:
+        except ValueError as exc:
             raise AuthenticationError(
                 "Could not separate Authorization scheme and token"
-            )
+            ) from exc
         if scheme.lower() != prefix.lower():
             raise AuthenticationError(f"Authorization scheme {scheme} is not supported")
         return token
 
-    async def authenticate(
-        self, request
-    ) -> Union[None, Tuple[AuthCredentials, BaseUser]]:
-        if "Authorization" not in request.headers:
+    async def authenticate(self, conn) -> Union[None, Tuple[AuthCredentials, BaseUser]]:
+        if "Authorization" not in conn.headers:
             return None
 
-        auth = request.headers["Authorization"]
+        auth = conn.headers["Authorization"]
         token = self.get_token_from_header(authorization=auth, prefix=self.prefix)
         try:
             payload = jwt.decode(token, key=self.providers_keys)
-        except Exception as e:
-            raise AuthenticationError(str(e))
+        except Exception as exc:
+            raise AuthenticationError(str(exc)) from exc
         return AuthCredentials(["authenticated"]), SimpleUser(username=payload["email"])

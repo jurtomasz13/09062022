@@ -1,5 +1,8 @@
-from sqlalchemy import Column, Integer, String
+"""Module for SQLALCHEMY models"""
+# pylint: disable=too-few-public-methods
+# pylint: disable=missing-class-docstring
 
+from sqlalchemy import Column, Integer, String
 from database import Base
 
 

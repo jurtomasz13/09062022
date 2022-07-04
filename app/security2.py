@@ -1,14 +1,15 @@
+"""Module holding functions related to security"""
+
+import requests
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
-import requests
 
 config = Config(".env")
 
 oauth = OAuth(config)
 
 OPENID_CONF_URL = "https://accounts.google.com/.well-known/openid-configuration"
-PROVIDERS_KEYS: dict = requests.get(
-    "https://www.googleapis.com/oauth2/v3/certs").json()
+PROVIDERS_KEYS: dict = requests.get("https://www.googleapis.com/oauth2/v3/certs").json()
 
 oauth.register(
     name="google",

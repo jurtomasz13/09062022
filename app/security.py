@@ -1,12 +1,15 @@
-from datetime import datetime, timedelta
+"""Module holding functions related to security"""
+# pylint: disable=no-value-for-parameter
 
-from jose import jwt
+from datetime import datetime, timedelta
 
 import config
 from crud import get_player_by_name
+from jose import jwt
 
 
 def authenticate_user(username: str):
+    """Authenticates the user and returns it"""
     user = get_player_by_name(username)
     if not user:
         return False
@@ -14,6 +17,7 @@ def authenticate_user(username: str):
 
 
 def create_access_token(username):
+    """Creates a new access token for the given username"""
     to_encode = {
         "sub": username,
         "iat": datetime.utcnow(),
