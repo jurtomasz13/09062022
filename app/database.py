@@ -40,7 +40,9 @@ class Connection(BaseConnection):
 def get_session(func):
     """Decorator for providing a session"""
 
-    def wrapper(*args):
+    def wrapper(*args, **kwargs):
         with Connection.connection() as session:
-            return func(*args, session=session)
+            if [item for item in kwargs.values() if isinstance(item, Session)]:
+                return func(*args, **kwargs)
+            return func(*args, **kwargs, session=session)
     return wrapper
