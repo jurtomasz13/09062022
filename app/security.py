@@ -1,11 +1,11 @@
 """Module holding functions related to security"""
-# pylint: disable=no-value-for-parameter
 
 from datetime import datetime, timedelta
 
+from jose import jwt
+
 import config
 from crud import get_player_by_name
-from jose import jwt
 
 
 def authenticate_user(username: str):

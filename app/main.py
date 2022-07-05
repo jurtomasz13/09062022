@@ -2,7 +2,6 @@
 # pylint: disable=unused-argument
 # pylint: disable=redefined-outer-name
 # pylint: disable=missing-function-docstring
-# pylint: disable=no-value-for-parameter
 
 from json import JSONDecodeError
 

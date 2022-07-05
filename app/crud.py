@@ -8,7 +8,7 @@ from utils import to_json
 
 
 @get_session
-def create_player(player_details: dict, session: Session) -> int:
+def create_player(player_details: dict, session: Session | None = None) -> int:
     """Creates new player and returns it"""
     player = models.Player(**player_details)
     session.add(player)
@@ -18,7 +18,7 @@ def create_player(player_details: dict, session: Session) -> int:
 
 
 @get_session
-def get_player_by_name(name: str, session: Session) -> dict:
+def get_player_by_name(name: str, session: Session | None = None) -> dict:
     """Returns player by its name"""
     return to_json(
         session.query(models.Player).filter(models.Player.name == name).first()
@@ -26,7 +26,7 @@ def get_player_by_name(name: str, session: Session) -> dict:
 
 
 @get_session
-def get_player_by_id(row_id: int, session: Session) -> dict:
+def get_player_by_id(row_id: int, session: Session | None = None) -> dict:
     """Returns player by its id"""
     return to_json(
         session.query(models.Player).filter(models.Player.rowid == row_id).first()
@@ -34,7 +34,7 @@ def get_player_by_id(row_id: int, session: Session) -> dict:
 
 
 @get_session
-def update_health(name: str, health: int, session: Session) -> dict:
+def update_health(name: str, health: int, session: Session | None = None) -> dict:
     """Updates player's health"""
     player_id = (
         session.query(models.Player)
@@ -49,7 +49,7 @@ def update_health(name: str, health: int, session: Session) -> dict:
 
 
 @get_session
-def update_stats(winner: str, loser: str, session: Session) -> dict:
+def update_stats(winner: str, loser: str, session: Session | None = None) -> dict:
     """Updates players' fight result and returns theirs stats as a dict"""
     winner_id = (
         session.query(models.Player)
@@ -71,7 +71,7 @@ def update_stats(winner: str, loser: str, session: Session) -> dict:
 
 
 @get_session
-def get_players(session: Session) -> dict:
+def get_players(session: Session | None = None) -> dict:
     """Returns a list of players"""
     players = to_json(session.query(models.Player).all())
     print(f"HEHE: {players}")
@@ -79,7 +79,7 @@ def get_players(session: Session) -> dict:
 
 
 @get_session
-def set_status(name: str, status: str, session: Session) -> dict:
+def set_status(name: str, status: str, session: Session | None = None) -> dict:
     """Sets status of the player"""
     status = str(status)
     player = session.query(models.Player).filter(models.Player.name == name).first()

@@ -1,6 +1,5 @@
 """Module for business logic"""
 # pylint: disable=invalid-name
-# pylint: disable=no-value-for-parameter
 
 from random import sample
 

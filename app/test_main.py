@@ -1,6 +1,7 @@
 """Tests for main.py"""
 # pylint: disable=missing-function-docstring
 # pylint: disable=unused-argument
+# pylint: disable=redefined-outer-name
 
 import json
 from contextlib import contextmanager
@@ -21,7 +22,8 @@ engine = create_engine(
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJVc2VyXzEifQ.Gp3B7nVorqYIeIeFsamt2vZfRvfGM5i4Fuyc5oUC0SM"
+
+JWT_TOKEN = ''
 
 
 @contextmanager
@@ -175,7 +177,7 @@ def test_post_token():
 
 
 def test_post_attack():
-    headers = {"Authorization": "Bearer {}".format(JWT_TOKEN)}
+    headers = {"Authorization": f"Bearer {JWT_TOKEN}"}
 
     response = client.post(
         "api/player/attack", data=json.dumps({"name": "User_2"}), headers=headers
@@ -188,7 +190,7 @@ def test_post_attack():
 
 
 def test_post_duel(test_cleanup):
-    headers = {"Authorization": "Bearer {}".format(JWT_TOKEN)}
+    headers = {"Authorization": f"Bearer {JWT_TOKEN}"}
 
     response = client.post(
         "api/player/duel", data=json.dumps({"name": "User_2"}), headers=headers
@@ -196,9 +198,3 @@ def test_post_duel(test_cleanup):
 
     assert response.status_code == 200
     assert response.json().get("killer", False) and response.json().get("loser", False)
-
-
-@pytest.fixture
-def test_cleanup():
-    yield
-    Base.metadata.drop_all(bind=engine)
